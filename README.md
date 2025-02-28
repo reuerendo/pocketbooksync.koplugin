@@ -21,4 +21,4 @@ For further information, read the corresponding thread on MobileRead:
 https://www.mobileread.com/forums/showthread.php?t=354026
 
 ## Automatically remove from selected collection
-Automatically remove a book from the selected collection after reading. For example, if you (like me) add books to your "to read" collection and then remove them from that collection after reading, the plugin will help automate this.
+For example, if you (like me) add books to your "to read" collection and then remove them from that collection after reading, the plugin will help automate this. You must specify the name of the selected collection in the plugin settings.
