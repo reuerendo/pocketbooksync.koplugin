@@ -17,8 +17,6 @@ local InputDialog = require("ui/widget/inputdialog")
 local UIManager = require("ui/uimanager")
 local InfoMessage = require("ui/widget/infomessage")
 
-pocketbookDbConn:exec("PRAGMA journal_mode=WAL;")
-
 local PocketbookSync = WidgetContainer:extend{
     name = "pocketbooksync",
     is_doc_only = false,
@@ -278,9 +276,15 @@ function PocketbookSync:doSync(data)
             (bookid, profileid, cpage, npage, completed, opentime)
             VALUES (?, ?, ?, ?, ?, ?)
         ]]
+		
+	pocketbookDbConn:exec("BEGIN TRANSACTION")
+	
     local stmt = pocketbookDbConn:prepare(sql)
     stmt:reset():bind(book_id, profile_id, data.page, data.totalPages, data.completed, data.time):step()
     stmt:close()
+	
+	pocketbookDbConn:exec("COMMIT")
+	pocketbookDbConn:exec("PRAGMA wal_checkpoint")
 
     -- Если книга отмечена как прочитанная, проверяем таблицу bookshelfs_books и удаляем запись, если bookshelfid совпадает с сохранённым id
     if data.completed == 1 then
@@ -294,9 +298,15 @@ function PocketbookSync:doSync(data)
             check_stmt:close()
             if check_row then
                 local del_sql = "DELETE FROM bookshelfs_books WHERE bookid = ? AND bookshelfid = ?"
+				
+				pocketbookDbConn:exec("BEGIN TRANSACTION")
+				
                 local del_stmt = pocketbookDbConn:prepare(del_sql)
                 del_stmt:reset():bind(book_id, collection_id):step()
                 del_stmt:close()
+				
+				pocketbookDbConn:exec("COMMIT")
+				pocketbookDbConn:exec("PRAGMA wal_checkpoint(FULL)")
             end
         end
     end
